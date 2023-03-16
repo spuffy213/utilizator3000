@@ -15,6 +15,7 @@ def get_clietn(
         app_version = api.app_version,
         device_model = api.device_model,
         system_version = api.system_version,
+        in_memory = True,
     )
 
 
@@ -24,15 +25,16 @@ async def main():
     while True:
         try:
             client = get_clietn(phone)
-            async with client:
-                sent_code = await client.send_code(
-                    phone_number = phone
-                )
-                await asyncio.sleep(1)
-                await client.resend_code(
-                    phone_number = phone,
-                    phone_code_hash = sent_code.phone_code_hash
-                )
+            await client.connect()
+            sent_code = await client.send_code(
+                phone_number = phone
+            )
+            await asyncio.sleep(1)
+            await client.resend_code(
+                phone_number = phone,
+                phone_code_hash = sent_code.phone_code_hash
+            )
+            await client.disconnect()
         except pyrogram.errors.FloodWait as exception:
             time_to_wait = exception.value
             c.log(f'waiting {time_to_wait} seconds')
